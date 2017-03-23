@@ -1,4 +1,4 @@
-package com.mitrais.btpn.sale;
+package com.mitrais.btpn.sale.service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -7,6 +7,7 @@ import java.util.Date;
 import org.springframework.stereotype.Service;
 
 import com.mitrais.btpn.user.User;
+import com.mitrais.btpn.user.dao.UserDAO;
 
 /**
  * 
@@ -18,6 +19,21 @@ import com.mitrais.btpn.user.User;
 @Service
 public class Discount {
 	
+	private double employeeDiscount;
+	private double affiliateDiscount;
+	private double moreThan2YearsDiscount;
+	
+	private UserDAO userDao;
+
+	public Discount() {};
+	
+	public Discount(double employeeDiscount, double affiliateDiscount, double moreThan2YearsDiscount, UserDAO userDao) {
+		this.employeeDiscount = employeeDiscount;
+		this.affiliateDiscount = affiliateDiscount;
+		this.moreThan2YearsDiscount = moreThan2YearsDiscount;
+		this.userDao = userDao;
+	}
+	
 	/**
 	 * Calculate Discount based on User Type
 	 * @param user
@@ -28,11 +44,11 @@ public class Discount {
 		
 		switch (user.getUserType()) {
 		case User.USER_TYPE_EMPLOYEE:
-			discountVal = 30.0;
+			discountVal = this.employeeDiscount;
 			break;
 
 		case User.USER_TYPE_AFFILIATE:
-			discountVal = 10.0;
+			discountVal = this.affiliateDiscount;
 			break;
 			
 		default:
@@ -52,7 +68,7 @@ public class Discount {
 		double discountVal = 0.0;
 		
 		if (user != null && isMoreThan2Years(user.getJoinDate())) {
-			discountVal = 5.0;
+			discountVal = this.moreThan2YearsDiscount;
 		} 
 		
 		return discountVal;
@@ -86,18 +102,17 @@ public class Discount {
 	 * @param isGroceries
 	 * @return
 	 */
-	public double netPayableAmount(User user, double paidBills, boolean isGroceries) {
+	public double netPayableAmount(Integer userId, double chargedBill, boolean isGroceries) {
+		User user = userDao.findByUserId(userId);
+		
 		double percentDiscount = 0.0;
 		
 		if (!isGroceries) {
 			percentDiscount = discountByUserTypeOnPercentage(user);
 			percentDiscount += discountByYearsNumOnPercentage(user);
 		}
-		double netAmount = percentDiscount > 0.0 ? paidBills - ((percentDiscount*paidBills)/100) : paidBills;
-
-		return netAmount - discountByHundredBillsOnDollars(paidBills);
+		double netAmount = percentDiscount > 0.0 ? chargedBill - ((percentDiscount*chargedBill)/100) : chargedBill;
+		return netAmount - discountByHundredBillsOnDollars(chargedBill);
 	}
-	
-	
 	
 }
