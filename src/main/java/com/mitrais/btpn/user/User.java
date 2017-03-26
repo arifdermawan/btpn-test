@@ -1,6 +1,8 @@
 package com.mitrais.btpn.user;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.annotation.Generated;
@@ -26,6 +28,7 @@ public class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public static final String USER_TYPE_EMPLOYEE = "E";
 	public static final String USER_TYPE_AFFILIATE = "A";
+	public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -40,12 +43,25 @@ public class User implements Serializable {
 	@Column(name="join_date")
 	private Date joinDate;
 	
+	public User() {};
+	
 	
 	public User(Integer userId, String userName, String userType, Date joinDate) {
 		this.userId = userId;
 		this.userName = userName;
 		this.userType = userType;
 		this.joinDate = joinDate;
+	}
+	
+	public User(String userId, String userName, String userType, String joinDate) {
+		try {
+			this.userId = Integer.parseInt(userId);
+			this.userName = userName;
+			this.userType = userType;
+			this.joinDate = sdf.parse(joinDate);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 
 
