@@ -3,11 +3,15 @@ package com.mitrais.btpn.sale.service;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mitrais.btpn.user.User;
 import com.mitrais.btpn.user.dao.UserDAO;
+import com.mitrais.btpn.user.service.UserService;
 
 /**
  * 
@@ -19,19 +23,20 @@ import com.mitrais.btpn.user.dao.UserDAO;
 @Service
 public class Discount {
 	
+	@Autowired
+	private UserService userService;
+
 	private double employeeDiscount;
 	private double affiliateDiscount;
 	private double moreThan2YearsDiscount;
-	
-	private UserDAO userDao;
 
 	public Discount() {};
 	
-	public Discount(double employeeDiscount, double affiliateDiscount, double moreThan2YearsDiscount, UserDAO userDao) {
+	public Discount(double employeeDiscount, double affiliateDiscount, double moreThan2YearsDiscount, UserService userService) {
 		this.employeeDiscount = employeeDiscount;
 		this.affiliateDiscount = affiliateDiscount;
 		this.moreThan2YearsDiscount = moreThan2YearsDiscount;
-		this.userDao = userDao;
+		this.userService = userService;
 	}
 	
 	/**
@@ -103,14 +108,25 @@ public class Discount {
 	 * @return
 	 */
 	public double netPayableAmount(Integer userId, double chargedBill, boolean isGroceries) {
-		User user = userDao.findByUserId(userId);
+		User user = userService.findByUserId(userId);
+		
+		if (user == null) {
+			List<User> userList = userService.readUserFromFile();
+			for (Iterator<User> iterator = userList.iterator(); iterator.hasNext();) {
+				User us = iterator.next();
+				if (userId == us.getUserId()) {
+					user = us;
+				}
+			}
+		}
 		
 		double percentDiscount = 0.0;
 		
-		if (!isGroceries) {
+		if ( user != null && !isGroceries) {
 			percentDiscount = discountByUserTypeOnPercentage(user);
 			percentDiscount += discountByYearsNumOnPercentage(user);
-		}
+		} 
+		
 		double netAmount = percentDiscount > 0.0 ? chargedBill - ((percentDiscount*chargedBill)/100) : chargedBill;
 		return netAmount - discountByHundredBillsOnDollars(chargedBill);
 	}

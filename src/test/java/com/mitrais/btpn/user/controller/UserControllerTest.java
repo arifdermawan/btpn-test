@@ -30,11 +30,8 @@ public class UserControllerTest {
 	@Test
 	public void testReadFromJsonFile() {
 		List<User> userList = UserService.readUserFromFile();
-		UserController userController = new UserController();
-		System.out.println(userController.getAllUserListFromJsonFile());
-		
 		List<User> result = userCont.getAllUserListFromJsonFile();
-		assertThat(result.get(0).getUserName(), is(userList.get(0).getUserName()));
+		assertThat(result.toString(), is(userList.toString()));
 	}
 
 }

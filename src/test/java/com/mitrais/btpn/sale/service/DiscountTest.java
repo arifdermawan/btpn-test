@@ -15,12 +15,13 @@ import org.mockito.MockitoAnnotations;
 
 import com.mitrais.btpn.user.User;
 import com.mitrais.btpn.user.dao.UserDAO;
+import com.mitrais.btpn.user.service.UserService;
 
 
 public class DiscountTest {
 	
 	@Mock
-	UserDAO userDao;
+	UserService userService;
 	
 	@InjectMocks
 	private Discount discount;
@@ -37,7 +38,7 @@ public class DiscountTest {
 	    	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 			employee = new User(1, "John Denver", User.USER_TYPE_EMPLOYEE, sdf.parse("2012-01-20"));
 			affiliate = new User(2, "Bobby Brown", User.USER_TYPE_AFFILIATE,  sdf.parse("2016-11-20"));
-			discount = new Discount(30, 10, 5, userDao);
+			discount = new Discount(30, 10, 5, userService);
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
@@ -72,7 +73,7 @@ public class DiscountTest {
 	
 	@Test
 	public void netPayableAmountTest() {
-		when(userDao.findByUserId(anyInt())).thenReturn(employee, employee, affiliate, affiliate);
+		when(userService.findByUserId(anyInt())).thenReturn(employee, employee, affiliate, affiliate);
 		
 		double employeGroceriesNetAmount = discount.netPayableAmount(1, 990, true);
 		assertTrue(employeGroceriesNetAmount == 945);
